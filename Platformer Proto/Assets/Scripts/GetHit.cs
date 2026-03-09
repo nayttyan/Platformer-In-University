@@ -12,6 +12,8 @@ public class GetHit : MonoBehaviour
     private Rigidbody rb;
     private Transform enemy;
 
+    
+
     private void Start()
     {
         playerMovementScript = GetComponent<PlayerMovement>();
@@ -62,7 +64,9 @@ public class GetHit : MonoBehaviour
         hurt = true;
         playerMovementScript.playerStats.canMove = false;
         playerMovementScript.soundManager.PlayHitSound();
+        playerMovementScript.playerStats.health--;
         StartCoroutine("Recover");
+        Debug.Log("HITT, health: " + playerMovementScript.playerStats.health);
     }
     private IEnumerator Recover()
     {

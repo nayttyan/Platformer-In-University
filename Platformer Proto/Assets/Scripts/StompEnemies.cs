@@ -78,6 +78,7 @@ public class StompEnemies : MonoBehaviour
         playerMovementScript.soundManager.PlayStompSound();
         playerMovementScript.soundManager.PlayEnemyDeathSound();
         ScoreManager.score += 100;
+        Debug.Log("Kill");
     }
 
     IEnumerator DestroyEnemy()
