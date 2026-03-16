@@ -9,21 +9,17 @@ public class RefactorEnemy : MonoBehaviour
     [Tooltip("The transform that will lock onto the player once the enemy has spotted them.")]
     public Transform sight;
 
-    [Tooltip("The transform to which the enemy will pace back and forth to.")]
-    public Transform[] patrolPoints;
-
-    [Tooltip("Blue explosion particles")]
+    [Tooltip("Explosion particles")]
     public GameObject enemyExplosionParticles;
-
-    public int currentPatrolPoint = 0;
 
     public bool slipping = false;
    
     public float facing;
-    
-    public Rigidbody rb;
 
     private GameObject player;
+
+    public PatrolLogic patrolLogicScript;
+    
 
     /// <summary>
     /// Contains tunable parameters to tweak the enemy's movement and behavior.
@@ -50,39 +46,22 @@ public class RefactorEnemy : MonoBehaviour
     }
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        patrolLogicScript = GetComponent<PatrolLogic>();
     }
     private void Update()
     {
         // changes the enemy's behavior: pacing in circles or chasing the player
         if (enemyStats.idle == true)
         {
-            //Patrol Logic
-                Vector3 moveToPoint = patrolPoints[currentPatrolPoint].position;
-                transform.position = Vector3.MoveTowards(transform.position, moveToPoint, enemyStats.walkSpeed * Time.deltaTime);
-
-                if (Vector3.Distance(transform.position, moveToPoint) < 0.01f)
-                {
-                    currentPatrolPoint++;
-                    if (currentPatrolPoint > patrolPoints.Length - 1)
-                    {
-                        currentPatrolPoint = 0;
-                    }
-                }
+            patrolLogicScript.Patrol(enemyStats.walkSpeed);
         }
-        else if (enemyStats.idle == false)
+        else
         {
             //Chase the player
-             sight.position = new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
-             transform.LookAt(sight);
-             transform.position = Vector3.MoveTowards(transform.position, player.transform.position, Time.deltaTime * enemyStats.chaseSpeed);
+            Chase(player.transform);
            
             //Explode if we get within the enemyStats.explodeDist
-            if (Vector3.Distance(transform.position, player.transform.position) < enemyStats.explodeDist)
-            {
-                StartCoroutine("Explode");
-                enemyStats.idle = true;
-            }
+           ExplodeCheck();
         }
 
         // stops enemy from following player up the inaccessible slopes
@@ -130,5 +109,20 @@ public class RefactorEnemy : MonoBehaviour
         Destroy(transform.parent.gameObject);
     }
 
+    private void Chase(Transform toChase)
+    {
+        sight.position = new Vector3(toChase.position.x, transform.position.y, toChase.position.z);
+        transform.LookAt(sight);
+        transform.position = Vector3.MoveTowards(transform.position, toChase.position, Time.deltaTime * enemyStats.chaseSpeed);
+    }
+
+    private void ExplodeCheck()
+    {
+        if (Vector3.Distance(transform.position, player.transform.position) < enemyStats.explodeDist)
+        {
+            StartCoroutine("Explode");
+            enemyStats.idle = true;
+        }
+    }
 
 }
